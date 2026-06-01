@@ -84,7 +84,6 @@ The **Random Forest** solves this by creating an ensemble of many independent tr
 **The result:** The forest trades the "perfect memory" of a single tree for the "generalized wisdom" of the crowd, significantly reducing False Positives.
 
 ---
-
 ## ⚙️ Logic & Process: A Deep Dive
 
 ### 1. The Decision to Refuse "Decoy" Data
@@ -114,7 +113,6 @@ To handle large-scale financial logs, the implementation avoids Python `for-loop
 * **Categorical Mapping:** Uses `np.bincount` and `np.unique` to handle non-numeric data (like Transaction Type or Currency) via fast C-level operations.
 
 ---
-
 ## 📂 Project Architecture
 
 * **`forest.py`**: The Orchestrator. Handles bootstrapping, feature bagging, and probability aggregation (The `Forest` object).
@@ -124,7 +122,6 @@ To handle large-scale financial logs, the implementation avoids Python `for-loop
 * **`utils.py`:** 
 
 ---
-
 ## 🚀 Usage
 
 ```python
@@ -142,7 +139,6 @@ risk_scores = rf.predict(X_test, detailed=True)
 ```
 
 ---
-
 ## 🛠 Key Technical Features
 
 * **Zero Dependencies:** Pure NumPy and Python Standard Library.
@@ -160,23 +156,5 @@ Due to different model training, the cross-examined results is as follow:
 
 Dependent on your choice, the results can vary; Hence the best results were gathered and cross-examined for your better judgement.
 You still can access the `.txt` log of the results at `results\metrics\`.
-
----
-
-## 🛠 Usage
-
-```python
-from RandomForest import RandomForest
-
-# Initialize model
-rf = RandomForest()
-
-# Fit on Money Laundering Dataset
-rf.fit(X_train, y_train, n_trees=20, trees_max_depth=10, min_leaf_purity=0.98)
-
-# Get risk probabilities (0.0 to 1.0)
-risk_scores = rf.predict(X_test, detailed=True)
-
-```
 
 ---
