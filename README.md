@@ -1,10 +1,5 @@
 
 ---
-
-![Random_Forest_Thumbnail](https://i.postimg.cc/DyThbP9B/Gemini_Generated_Image_i0p16xi0p16xi0p1.png)
-
-
----
 ## **🔭 Project Overview**
 This project features a robust, from-scratch implementation of the Random Forest algorithm using only NumPy. While high-level libraries like Scikit-Learn are industry standards, building the algorithm from the ground up allows for deep optimization of the decision-making process—specifically for high-stakes domains like Money Laundering Detection.
 
