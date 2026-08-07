@@ -2,11 +2,11 @@
 ---
 # Random Forest Framework
 
-*A Random Forest classifier implemented from scratch in NumPy — no scikit-learn, no external ML dependency.*
+A from-scratch Random Forest framework in NumPy, built around efficient tree construction, scalable training, explicit feature semantics, class-imbalance handling, and custom model persistence.
 
 | **Author**            | Sepanta Metanat (**GitHub:** [github.com/Sepiimt](https://github.com/Sepiimt))                                                 |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Version**           | 1.0.0                                                                                                                          |
+| **Version**           | 1.0.1                                                                                                                          |
 | **License**           | GNU General Public License v3.0 ([LICENSE](https://github.com/Sepiimt/Random-Forest-Framework-From-Scratch/blob/main/LICENSE)) |
 | **Core dependencies** | See [requirements.txt](https://github.com/Sepiimt/Random-Forest-Framework-From-Scratch/blob/main/requirements.txt)             |
 | **First / last edit** | 2026-02-25 / 2026-08-06                                                                                                        |
@@ -14,7 +14,7 @@
 ---
 ## Abstract
 
-This repository contains a ground-up implementation of a Random Forest classifier for binary classification, built directly on NumPy arrays with no dependence on scikit-learn or any other machine-learning library. The estimator supports both numerical and categorical features under an explicit — never inferred — type declaration; three interchangeable split criteria (`gini`, `class_weighted_gini`, `hellinger`); per-tree bootstrap class balancing for skewed datasets; structural regularization via `min_samples_split`/`min_samples_leaf`; `joblib`-based tree-level parallelism; and a custom `numpy`-native serialization format that flattens each fitted tree into parallel arrays rather than pickling Python objects. The framework was developed and benchmarked against three binary classification datasets of substantially different character: **SAML-D** (synthetic anti-money-laundering transactions, ~9.5M rows, 962:1 class imbalance), **HIGGS**, and **SUSY** (particle-physics benchmark datasets). Results, memory profiles, and known limitations for all three are reported below.
+This repository contains a ground-up implementation of a Random Forest classifier framework for binary classification, built directly on NumPy arrays with no dependence on scikit-learn or any other machine-learning library. The estimator supports both numerical and categorical features under an explicit — never inferred — type declaration; three interchangeable split criteria (`gini`, `class_weighted_gini`, `hellinger`); per-tree bootstrap class balancing for skewed datasets; structural regularization via `min_samples_split`/`min_samples_leaf`; `joblib`-based tree-level parallelism; and a custom `numpy`-native serialization format that flattens each fitted tree into parallel arrays rather than pickling Python objects. The framework was developed and benchmarked against three binary classification datasets of substantially different character: **SAML-D** (synthetic anti-money-laundering transactions, ~9.5M rows, 962:1 class imbalance), **HIGGS**, and **SUSY** (particle-physics benchmark datasets). Results, memory profiles, and known limitations for all three are reported below.
 
 ## Table of Contents
 
