@@ -1,0 +1,20 @@
+# Random Forest Framework — dependencies
+# Requires Python >= 3.11 (tomllib, typing.Self, PEP 604 unions are used throughout
+# src/ and scripts/; this line is informational only, pip does not enforce it).
+
+# --- Core package (src/random_forest) ---
+numpy
+joblib          # Parallel(backend="loky") tree-level parallelism
+typeguard       # @typechecked runtime signature enforcement
+matplotlib      # random_forest.plot.plotter
+psutil          # random_forest.utils.profiler (MemoryTracker)
+
+# --- Notebook ETL pipeline only (notebooks/01_data_cleaning_and_examination.ipynb) ---
+# Not imported anywhere inside src/random_forest itself — only needed if you're
+# running the data-cleaning notebook.
+polars          # scan_csv / lazy transforms / sink_parquet / collect(engine="streaming")
+
+# --- Notebook execution (optional) ---
+# Needed only to actually run the .ipynb files interactively, not to import
+# random_forest itself. Uncomment if you don't already have a Jupyter environment.
+# jupyterlab
