@@ -1,0 +1,23 @@
+[path]
+data = "../data/splits/saml_d/"
+model = "../artifacts/forest/saml_d/"
+memory_profile = "../results/benchmarks/saml_d/memory/"
+prediction = "../artifacts/predictions/saml_d/"
+
+[name]
+profile_label = "SAML-D Training Memory Benchmark"
+profile_filename = "saml_d_memory_report.txt"
+
+[random_forest]
+cc_indices = [2,3,4,5,6,7,8] #> `.toml` cannot take `None` as value.
+trees_max_depth = 200
+bootstrap_balance = "auto"
+criterion = "hellinger"
+random_state = 42
+n_jobs = 8
+
+[iterable_config]
+n_trees = [100, 120, 140, 160]
+min_leaf_purity = [0.98, 0.99, 0.999, 0.999]
+min_samples_split = [10, 20, 30, 40]
+min_samples_leaf = [10, 20, 30, 40]
