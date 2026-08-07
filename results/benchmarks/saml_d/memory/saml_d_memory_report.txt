@@ -1,0 +1,9 @@
+--- [Memory Profile: SAML-D Training Memory Benchmark] ---
+baseline_mb: 50.24
+peak_mb: 4168.53
+avg_mb: 3169.82
+peak_gb: 4.071
+net_peak_mb: 4118.29
+net_avg_mb: 3119.59
+samples_taken: 4521
+----------------------------------

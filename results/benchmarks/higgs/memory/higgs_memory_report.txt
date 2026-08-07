@@ -1,0 +1,9 @@
+--- [Memory Profile: HIGGS Training Memory Benchmark] ---
+baseline_mb: 48.93
+peak_mb: 14552.73
+avg_mb: 11138.51
+peak_gb: 14.212
+net_peak_mb: 14503.8
+net_avg_mb: 11089.58
+samples_taken: 348935
+----------------------------------
