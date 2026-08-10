@@ -12,6 +12,7 @@ from ..utils import timer_function, time_capture_function
 from ..tree import Node
 from ..api.meta import Meta as meta
 from ..api.decorators import classproperty, requires_fit
+from ..api.memory import limit_memory
 
 from ..api.warnings import (CategoricalInferenceWarning, 
                             ResourceLimitWarning, AutoBalanceWarning)
@@ -23,12 +24,11 @@ from ..api.typing import (Instructions, SplitCriterion, Iterable, IterableTuple,
 
 class RandomForest:
     # --- Documentation ---
-    """\u200b
-    --- Random Forest Class ---
+    """
+    ## Random Forest Class
     RF framework implemented from scratch by "Sepanta Metanat"
-
-    First edit: "2026/02/25"
-    Last edit: "2026/08/6"
+    - First edit: "2026/02/25"
+    - Last edit: "2026/08/10"
     """
     # --- Slots ---
     __slots__ = (
@@ -64,7 +64,8 @@ class RandomForest:
         # --- Meta Class ---
         return meta()
 
-    
+
+    @limit_memory(0.95)
     @typechecked
     def fit(self, 
             X_path: str, 
@@ -84,27 +85,26 @@ class RandomForest:
             timer: bool = True
             ) -> None:
         # --- Documentation ---
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to train RF model.
-            
-        #> Parameters Documentation: 
-        1. X_path: Training X `.npy` file path.
-        2. Y_path: Training Y `.npy` file path.
-        3. cc_indices: Column indices (into X) that are categorical.
-        4. n_trees: Number of Trees you desire to train in RF model.
-        5. trees_max_depth: Each tree's maximum allowed depth.
-        6. min_leaf_purity: Node's minimum purity to turn leaf.
-        7. bootstrap_balance: Controls per-tree class balancing of the bootstrap sample.
-        8. criterion: Split criterion, independent of and combinable with `bootstrap_balance`.
-        9. min_samples_split: Structural regularization - a node with fewer samples than this 
+             
+        :param X_path: Training X `.npy` file path.
+        :param Y_path: Training Y `.npy` file path.
+        :param cc_indices: Column indices (into X) that are categorical.
+        :param n_trees: Number of Trees you desire to train in RF model.
+        :param trees_max_depth: Each tree's maximum allowed depth.
+        :param min_leaf_purity: Node's minimum purity to turn leaf.
+        :param bootstrap_balance: Controls per-tree class balancing of the bootstrap sample.
+        :param criterion: Split criterion, independent of and combinable with `bootstrap_balance`.
+        :param min_samples_split: Structural regularization - a node with fewer samples than this 
         \tis never split, regardless of purity.
-        10. min_samples_leaf: Structural regularization - a candidate split is rejected unless 
+        :param min_samples_leaf: Structural regularization - a candidate split is rejected unless 
         \tboth children would end up with at least this many samples.
-        11. random_state: The number of random state.
-        12. n_jobs: Number of CPU cores you desire to include in parallel computing.
-        13. force_refit: True/False Flag for forcing a trained model to refit.
-        14. timer: True/False Flag for timer. 
+        :param random_state: The number of random state.
+        :param n_jobs: Number of CPU cores you desire to include in parallel computing.
+        :param force_refit: True/False Flag for forcing a trained model to refit.
+        :param timer: True/False Flag for timer. 
         """
         # --- Input Validation ---
         _refit_validation(self, force_refit)
@@ -370,6 +370,7 @@ class RandomForest:
         return combined_row_indices
 
 
+    @limit_memory(0.95)
     @requires_fit #> Model Train Check
     @typechecked
     def predict(self, 
@@ -381,15 +382,14 @@ class RandomForest:
                 timer: bool = True
                 ) -> Iterable:
         # --- Documentation ---
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to use the trained RF model and predict.
 
-        #> Parameters Documentation:
-        1. X_path: Testing X `.npy` file path.
-        2. binarize: Flag to determine if predictions should be binarized.
-        3. threshold: Threshold for binarizing predictions.
-        4. timer: Flag for starting the timer.
+        :param X_path: Testing X `.npy` file path.
+        :param binarize: Flag to determine if predictions should be binarized.
+        :param threshold: Threshold for binarizing predictions.
+        :param timer: Flag for starting the timer.
         """
         # --- Input Validation ---
         _input_path_validator(X_path)
@@ -425,19 +425,19 @@ class RandomForest:
         return (predicted_y >= threshold).astype(int)
 
 
+    @limit_memory(0.95)
     @requires_fit #> Model Train Check
     @typechecked
     def save_model(self, 
                    directory: str = r"../artifacts/forest/", 
                    silent_save: bool = False
                    ) -> None:
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to save the RF model.
             
-        #> Parameters Documentation:
-        1. directory: Path to desired directory which the model will be saved in.
-        2. silent_save: Silent's the "Successful Saving" message.
+        :param directory: Path to desired directory which the model will be saved in.
+        :param silent_save: Silent's the "Successful Saving" message.
         """
         # --- Creating Directory and Path ---
         os.makedirs(directory, exist_ok=True)
@@ -527,20 +527,19 @@ class RandomForest:
             "is_fitted": np.bool_(self.is_fitted),}
 
     
-
     @classmethod
+    @limit_memory(0.95)
     @typechecked
     def load_model(cls, 
                    directory: str = r"../artifacts/forest/", 
                    silent_load: bool = False
                    ) -> Self:
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to load a saved the RF model.
         
-        #> Parameters Documentation:
-        1. directory: Path to desired directory which the model will be saved in.
-        2. silent_load: Silent's the "Successful Loading" message.
+        :param directory: Path to desired directory which the model will be saved in.
+        :param silent_load: Silents the "Successful Loading" message.
         """
         # --- Checking for Model Existence ---
         filepath = os.path.join(directory, "random_forest_model.npz")

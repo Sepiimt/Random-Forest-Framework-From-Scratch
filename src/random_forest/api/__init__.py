@@ -3,6 +3,7 @@ from .meta import Meta
 from .exceptions import *
 from .warnings import *
 from .typing import *
+from memory import *
 
 #> ---------------------------------------------------------------------------------------
 
@@ -17,7 +18,9 @@ __all__ = [
     "CategoricalInferenceWarning", "ResourceLimitWarning", "AutoBalanceWarning",
 
     "Instructions", "SplitCriterion", "Iterable", "IterableTuple", "OptionalIterable", 
-    "OptionalInteger", "OptionalString", "DependentArrayTuple"
+    "OptionalInteger", "OptionalString", "DependentArrayTuple",
+
+    "limit_memory"
 ]
 
 #> ---------------------------------------------------------------------------------------

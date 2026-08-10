@@ -1,8 +1,11 @@
 import numpy as np
 from typeguard import typechecked
+from ..api.memory import limit_memory
 from ..api.typing import Iterable
+
 #> ---------------------------------------------------------------------------------------
 
+@limit_memory(0.95)
 @typechecked
 def train_test_split(X: Iterable, 
                      Y: Iterable,
@@ -14,24 +17,21 @@ def train_test_split(X: Iterable,
                      ) -> tuple[np.ndarray, np.ndarray,
                                 np.ndarray, np.ndarray]:
     # --- Documentation ---
-    """\u200b
-    --- Train/Test Split ---
+    """
+    ## Train/Test Split
     Function implemented from scratch by "Sepanta Metanat"
+    - First edit: "2026/02/25"
+    - Last edit: "2026/08/10"
 
-    First edit: "2026/02/25"
-    Last edit: "2026/08/5"
-
-    #> Usage and Information
+    ## Usage
     Use this function to split train/test data while customizing it.
-        
-    #> Parameters Documentation: 
-    1. X: X array
-    2. Y: Y array
-    3. test_size: Based on total size, the amount dedicated to testing
-    4. subsample: Percentage or sample-count to create subsample from total
-    5. shuffle: Flag for shuffling the data
-    6. random_state: Random state value
-    \t(to be able to encode new data based on training)
+
+    :param X: X array
+    :param Y: Y array
+    :param test_size: Based on total size, the amount dedicated to testing
+    :param subsample: Percentage or sample-count to create a subsample from the X and Y
+    :param shuffle: Flag for shuffling the data
+    :param random_state: Random state value (to be able to encode new data based on training)
     """
     X = np.asarray(X)
     Y = np.asarray(Y).ravel()

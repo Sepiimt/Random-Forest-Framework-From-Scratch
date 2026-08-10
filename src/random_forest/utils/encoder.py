@@ -2,24 +2,25 @@ import numpy as np
 import os
 from typeguard import typechecked
 from typing import Self
+from ..api.memory import limit_memory
 from ..api.decorators import requires_fit
 
 #> ---------------------------------------------------------------------------------------
 
 class Encoder:
     # --- Documentation ---
-    """\u200b
-    --- Encoder Class ---
+    """
+    ## Encoder Class ---
     Encoder implemented from scratch by "Sepanta Metanat"
-
-    First edit: "2026/08/1"
-    Last edit: "2026/08/5"
+    - First edit: "2026/08/1"
+    - Last edit: "2026/08/10"
     """
     def __init__(self):
         self.decoder_data_path = None
         self.encoded_columns = None
         self.is_fitted: bool = False
 
+    @limit_memory(0.95)
     @typechecked
     def fit_transform(self,
                       X: np.ndarray,
@@ -27,15 +28,14 @@ class Encoder:
                       save_path: str = r"../artifacts/encoder/model_data/"
                       ) -> np.ndarray:
         # --- Documentation ---
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to train Encoder model while encoding certain columns.
             
-        #> Parameters Documentation: 
-        1. X: X array
-        2. columns: Columns to get encoded
-        3. save_path: Save-path for saving the model info 
-        \t(to be able to encode new data based on training)
+        :param X: X array
+        :param columns: Columns to get encoded
+        :param save_path: Save-path for saving the model info 
+            (to be able to encode new data based on training)
         """
         # --- Changing dtype ---
         X = X.astype(object)
@@ -61,15 +61,15 @@ class Encoder:
         return X
 
     @requires_fit
+    @limit_memory(0.95)
     @typechecked
     def encoder(self, X: np.ndarray) -> np.ndarray:
         # --- Documentation ---
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to encoding pre-defined columns based on training info.
             
-        #> Parameters Documentation: 
-        1. X: X array
+        :param X: X array
         """
         # --- Changing dtype ---
         X = X.astype(object)
@@ -93,19 +93,19 @@ class Encoder:
         return X
 
     @requires_fit
+    @limit_memory(0.95)
     @typechecked
     def decoder(self, X: np.ndarray) -> np.ndarray:
         # --- Documentation ---
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to decode encoded data back to original form.
-        \t (based on training info)
+            (based on training info)
             
-        #> Parameters Documentation: 
-        1. X: X array
-        2. columns: Columns to get encoded
-        3. save_path: Save-path for saving the model info 
-        \t(to be able to encode new data based on training)
+        :param X: X array
+        :param columns: Columns to get encoded
+        :param save_path: Save-path for saving the model info 
+            (to be able to encode new data based on training)
         """
         # --- Changing dtype ---
         X = X.astype(object)
@@ -124,18 +124,18 @@ class Encoder:
         return X
 
     @requires_fit
+    @limit_memory(0.95)
     @typechecked
     def save_model(self, 
                    save_dir_path: str = r"../artifacts/encoder/model_data/",
                    silent_save: bool = False) -> None:
         # --- Documentation ---
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to save the trained Encoder class.
             
-        #> Parameters Documentation: 
-        1. save_dir_path: Save-path directory
-        2. silent_save: Flag to silent the success report
+        :param save_dir_path: Save-path directory
+        :param silent_save: Flag to silent the success report
         """
         # --- Path Check ---
         os.makedirs(save_dir_path, exist_ok=True)
@@ -151,19 +151,19 @@ class Encoder:
 
 
     @classmethod
+    @limit_memory(0.95)
     @typechecked
     def load_model(cls,
                    dir_path: str = os.path.join("..", "artifacts", 
                                                 "encoder", "model_data"),
                    silent_load: bool = False) -> Self:
         # --- Documentation ---
-        """\u200b
-        #> Usage and Information
+        """
+        ## Usage
         Use this function to load a trained Encoder class.
             
-        #> Parameters Documentation: 
-        1. dir_path: Model saved-path directory
-        2. silent_load: Flag to silent the success report
+        :param dir_path: Model saved-path directory
+        :param silent_load: Flag to silent the success report
         """
         # --- Creating Specific Path ---
         load_path = os.path.join(dir_path, "model_data.npy")

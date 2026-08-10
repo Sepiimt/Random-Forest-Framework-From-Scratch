@@ -14,15 +14,14 @@ def model_metrics_plotter(metrics_foler_path: str = r"../results/benchmarks/",
                           save_to: str = r"../results/figures/"):
     # --- Documentation ---
     """
-    #> Usage and Information
+    ## Usage
     Use this function to turn "metrics.txt"(s) into comparetive figures.
     
-    #> Parameters Documentation:
-    1. metrics_foler_path: Path to "metrics.txt".
-    2. plot_title: Title for the entire plot.
-    3. save_plot: Flag for saving the plot.
-    4. save_name: Name for the saved plot file.
-    5. save_to: Save path for the plotted figure.
+    :param metrics_foler_path: Path to "metrics.txt".
+    :param plot_title: Title for the entire plot.
+    :param save_plot: Flag for saving the plot.
+    :param save_name: Name for the saved plot file.
+    :param save_to: Save path for the plotted figure.
     """
     # --- Reading Metrics Process ---
     zip_list, file_names = _metrics_extractor(metrics_foler_path)

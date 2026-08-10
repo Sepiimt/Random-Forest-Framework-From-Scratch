@@ -3,6 +3,9 @@
 class RandomForestError(Exception):
     """Base exception for every RandomForest error."""
 
+class MemoryLimitExceededError(RandomForestError):
+    """Process exceeded its allowed RAM limit!"""
+
 class ModelNotFittedError(RandomForestError):
     """Prediction attempted before training!"""
 
