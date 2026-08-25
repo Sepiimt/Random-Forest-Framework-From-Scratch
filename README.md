@@ -227,6 +227,7 @@ Peak RAM across the sweep: **4.07 GB** (baseline 50 MB).
 | 2 | 120 | 0.97 | 15 / 15 | 1586.3 | 0.7405 | 0.7370 | 0.7932 | 0.7641 | 0.1737 |
 | 3 | 140 | 0.98 | 20 / 20 | 1623.8 | 0.7394 | 0.7414 | 0.7803 | 0.7604 | 0.1741 |
 | 4 | 160 | 0.99 | 25 / 25 | 1581.7 | 0.7394 | 0.7455 | 0.7713 | 0.7582 | 0.1744 |
+
 ![higgs-model-results](https://i.postimg.cc/wBRd0Sh6/higgs-model-results.png)
 Peak RAM across the sweep: **14.21 GB** (baseline 49 MB).
 
@@ -238,6 +239,7 @@ Peak RAM across the sweep: **14.21 GB** (baseline 49 MB).
 | 2 | 120 | 0.97 | 15 / 15 | 749.7 | 0.8014 | 0.8297 | 0.7118 | 0.7662 | 0.1392 |
 | 3 | 140 | 0.98 | 20 / 20 | 790.5 | 0.8018 | 0.8264 | 0.7174 | **0.7681** | 0.1389 |
 | 4 | 160 | 0.99 | 25 / 25 | 849.3 | **0.8016** | 0.8226 | 0.7220 | 0.7690 | **0.1389** |
+
 ![susy-model-results](https://i.postimg.cc/63sxSY0m/susy-model-results.png)
 Peak RAM across the sweep: **7.51 GB** (baseline 50 MB).
 
