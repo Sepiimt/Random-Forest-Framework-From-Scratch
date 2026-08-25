@@ -1,6 +1,6 @@
 import numpy as np
 from collections.abc import Generator
-from ..api.typing import SplitCriterion, Iterable, CriteriaTuple
+from ..api.typing import SplitCriterion, Iterable, IterableTuple, CriteriaTuple
 
 #> ---------------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ def rf_criteria_chooser(X: Iterable,
                         is_numerical_mask: Iterable,
                         column_position_map: Iterable, 
                         criterion: SplitCriterion, 
-                        class_weights, 
+                        class_weights: Iterable, 
                         min_samples_leaf: int, 
                         rng: Generator
                         ) -> CriteriaTuple:
@@ -157,7 +157,8 @@ def _numerical_split_counts(X: Iterable,
                             random_row_indices: Iterable, 
                             sort_order_array: Iterable, 
                             random_column_number: int, 
-                            column_position_map: Iterable):
+                            column_position_map: Iterable
+                            ) -> IterableTuple:
     # --- 1. Extract and sort X and Y ONLY ONCE ---
     #> Fetch the specific sort order for this column. sort_order_array only holds
     #> columns that were numerical at fit-time (see RandomForest._build_numerical_mask),
@@ -193,7 +194,8 @@ def _none_numerical_split_counts(X: Iterable,
                                  Y: Iterable, 
                                  random_row_indices: Iterable, 
                                  random_column_number: int, 
-                                 node_true_count: int):
+                                 node_true_count: int
+                                 ) -> IterableTuple:
     # --- Return Concept ---
     #> Note: Our concept for returning values will be a arrays of calculated details in the right and left leaf.
     # --- Calculating the Amount of False and True y ---
@@ -215,24 +217,22 @@ def _none_numerical_split_counts(X: Iterable,
 def _none_numerical_crosstab(X: Iterable, 
                              Y: Iterable, 
                              random_row_indices: Iterable, 
-                             random_column_number: int):
-    # --- Mapping Categories ---
-    #> Note: First, we map unique strings to integers: O(n log n)
-    #> then 'inv' is an array of indices representing the strings
-    #> and 'names' are the original strings
-    x_values, encoded_x = np.unique(X[random_row_indices, random_column_number], 
-                                    return_inverse=True)
-    # --- Counting True Ys per Category ---
-    #> Note: Count 1s per category: O(n)
-    #> y must be numeric (0s and 1s)
-    true_y_per_x = np.bincount(encoded_x, 
-                               weights=Y[random_row_indices], 
-                               minlength=len(x_values)).astype(np.int32) #> Amount of True Values per Category.
-    amount_of_each_x = np.bincount(encoded_x, 
-                                   minlength=len(x_values)).astype(np.int32) #> Amount of X Values per Category.
-    xy_crosstab = np.column_stack((amount_of_each_x, true_y_per_x))
-    # Stack them into a [k x 2] numpy array: O(k)
-    return x_values, xy_crosstab
+                             random_column_number: int
+                             ) -> IterableTuple:
+    # --- Extracting the Globally Pre-Encoded Integer Categories ---
+    encoded_x = X[random_row_indices, random_column_number].astype(np.int32)
+    # --- O(N) Frequency Counting Without Implicit Sorting ---
+    amount_of_each_x = np.bincount(encoded_x)
+    true_y_per_x = np.bincount(encoded_x, weights=Y[random_row_indices])
+    # --- Isolating Categories Actually Present in this Node's Sample ---
+    active_categories = np.nonzero(amount_of_each_x)[0]
+    # --- Stacking the Counts into the Expected [k x 2] Array ---
+    xy_crosstab = np.column_stack((
+        amount_of_each_x[active_categories],
+        true_y_per_x[active_categories]
+    )).astype(np.int32)
+    # --- Return ---
+    return active_categories, xy_crosstab
 
 #> ---------------------------------------------------------------------------------------
 # --- Criterion Scoring Functions ---
