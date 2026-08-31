@@ -2,7 +2,7 @@ import numpy as np
 import os
 from typeguard import typechecked
 from typing import Self
-from ..api.memory import limit_memory
+from ..api.resource import memory_limit
 from ..api.decorators import requires_fit
 
 #> ---------------------------------------------------------------------------------------
@@ -10,17 +10,17 @@ from ..api.decorators import requires_fit
 class Encoder:
     # --- Documentation ---
     """
-    ## Encoder Class ---
-    Encoder implemented from scratch by "Sepanta Metanat"
+    ## Class: Encoder/Decoder 
+    Implemented from scratch by "Sepanta Metanat"
     - First edit: "2026/08/1"
-    - Last edit: "2026/08/10"
+    - Last edit: "2026/08/30"
     """
     def __init__(self):
         self.decoder_data_path = None
         self.encoded_columns = None
         self.is_fitted: bool = False
 
-    @limit_memory(0.95)
+    @memory_limit(0.9)
     @typechecked
     def fit_transform(self,
                       X: np.ndarray,
@@ -61,7 +61,7 @@ class Encoder:
         return X
 
     @requires_fit
-    @limit_memory(0.95)
+    @memory_limit(0.9)
     @typechecked
     def encoder(self, X: np.ndarray) -> np.ndarray:
         # --- Documentation ---
@@ -93,7 +93,7 @@ class Encoder:
         return X
 
     @requires_fit
-    @limit_memory(0.95)
+    @memory_limit(0.9)
     @typechecked
     def decoder(self, X: np.ndarray) -> np.ndarray:
         # --- Documentation ---
@@ -124,7 +124,7 @@ class Encoder:
         return X
 
     @requires_fit
-    @limit_memory(0.95)
+    @memory_limit(0.9)
     @typechecked
     def save_model(self, 
                    save_dir_path: str = r"../artifacts/encoder/model_data/",
@@ -151,7 +151,7 @@ class Encoder:
 
 
     @classmethod
-    @limit_memory(0.95)
+    @memory_limit(0.9)
     @typechecked
     def load_model(cls,
                    dir_path: str = os.path.join("..", "artifacts", 

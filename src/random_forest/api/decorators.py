@@ -7,18 +7,24 @@ from .exceptions import ModelNotFittedError
 
 T = TypeVar("T")
 R = TypeVar("R")
+
 class classproperty(Generic[T, R]):
     """
+    ## Decorator: Class Property
     Read-only property accessible directly from the class.
+    \n**Note:** Implemented as a descriptor to perform instance-aware method binding.
 
-    Example:
-    -------
-    class Foo:
+    ## Usage
+    ```python
+    class Meta:
         @classproperty
         def version(cls) -> str:
             return "1.0"
 
-    Foo.version
+    Meta.version
+    ```
+    ## Author 
+    - "Sepanta Metanat"
     """
     def __init__(self, func: Callable[[type[T]], R]):
         self._func = func
@@ -30,9 +36,26 @@ class classproperty(Generic[T, R]):
 #> ---------------------------------------------------------------------------------------
 
 F = TypeVar("F", bound=Callable[..., Any])
+
 class requires_fit:
     """
-    Decorator ensuring that an instance has already been fitted.
+    ## Decorator: Fit Required
+    Decorator enforcing that the instance has been
+        fitted before the decorated method can be called.
+    \n**Note:** Implemented as a descriptor to perform instance-aware method binding.
+    ## Usage
+        ```python
+        class Example:
+            def fit(self, ...):
+                ...
+                slef.is_fitted = True
+
+            @requires_fit
+            def save(self, ...):
+                ...
+        ```
+    ## Author 
+    - "Sepanta Metanat"
     """
     def __init__(self,
         func: Callable | None = None,

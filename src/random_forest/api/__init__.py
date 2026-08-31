@@ -3,7 +3,7 @@ from .meta import Meta
 from .exceptions import *
 from .warnings import *
 from .typing import *
-from memory import *
+from .resource import *
 
 #> ---------------------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ __all__ = [
     "Instructions", "SplitCriterion", "Iterable", "IterableTuple", "OptionalIterable", 
     "OptionalInteger", "OptionalString", "DependentArrayTuple",
 
-    "limit_memory"
+    "memory_limit", "cpu_limit"
 ]
 
 #> ---------------------------------------------------------------------------------------

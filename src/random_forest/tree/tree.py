@@ -1,4 +1,5 @@
 import numpy as np
+from numba import njit
 from collections.abc import Generator
 from .criteria import rf_criteria_chooser
 from ..api.typing import Iterable
@@ -6,6 +7,14 @@ from ..api.typing import Iterable
 #> ---------------------------------------------------------------------------------------
 
 class Node:
+    # --- Documentation ---
+    """
+    ## Class: Node
+    Node class implemented from scratch by "Sepanta Metanat"
+    - First edit: "2026/02/25"
+    - Last edit: "2026/08/30"
+    """
+    # --- Slots ---
     __slots__ = (
         "is_numerical", "criteria", "node_score", 
         "column_number","left_child", "right_child", 
@@ -88,8 +97,9 @@ class Node:
                        min_samples_leaf: int, 
                        rng: Generator):
         #> Note: Gini Details Format: (column_number, criteria, is_numerical, score)
-        left_child_values_mask = X[random_row_indices, gini_info[0]] <= gini_info[1]
-        right_child_values_mask = ~left_child_values_mask
+        (left_child_values_mask, 
+                 right_child_values_mask) = self._left_child_mask_creator(
+                     X, random_row_indices, gini_info, "numerical")
         # -- Masking Sort-Order Indices ---
         #> Note: sort_order_array only has columns for features that are numerical
         #> (see RandomForest._build_numerical_mask), so this remap is already cheaper
@@ -127,8 +137,9 @@ class Node:
                             min_samples_leaf: int, 
                             rng: Generator):
         #> Note: Gini Details Format: column_number, criteria, is_numerical, score)
-        left_child_values_mask = X[random_row_indices, gini_info[0]] == gini_info[1]
-        right_child_values_mask = ~left_child_values_mask
+        (left_child_values_mask, 
+         right_child_values_mask) = self._left_child_mask_creator(
+             X, random_row_indices, gini_info, "none_numerical")
         # -- Masking Sort-Order Indices ---
         left_sort_order = self._remap_sort_order(sort_order_array, left_child_values_mask)
         right_sort_order = self._remap_sort_order(sort_order_array, right_child_values_mask)
@@ -144,6 +155,22 @@ class Node:
                              is_numerical_mask, column_position_map, criterion, 
                              class_weights, min_samples_split, min_samples_leaf, rng)
 
+    @staticmethod
+    @njit
+    def _left_child_mask_creator(X, random_row_indices, gini_info, status:str):
+        if status == "numerical":
+            #> Note: Gini Details Format: (column_number, criteria, is_numerical, score)
+            left_child_values_mask = X[random_row_indices, gini_info[0]] <= gini_info[1]
+            right_child_values_mask = ~left_child_values_mask
+            # --- Return ---
+            return left_child_values_mask, right_child_values_mask
+        elif status == "none_numerical":
+            #> Note: Gini Details Format: column_number, criteria, is_numerical, score)
+            left_child_values_mask = X[random_row_indices, gini_info[0]] == gini_info[1]
+            right_child_values_mask = ~left_child_values_mask
+            # --- Return ---
+            return left_child_values_mask, right_child_values_mask
+
     def _info_regulator(self, 
                         gini_info: tuple):
         #> Note: Format: (column_number, criteria, is_numerical, score)
@@ -152,7 +179,8 @@ class Node:
         self.is_numerical = gini_info[2]
         self.node_score = gini_info[3]
         
-    def _is_leaf_regulator(self, Y: Iterable, 
+    def _is_leaf_regulator(self, 
+                           Y: Iterable, 
                            random_row_indices: Iterable, 
                            max_depth: int, 
                            min_leaf_purity: float, 
@@ -189,15 +217,26 @@ class Node:
         self.prediction = np.round(self.probability)
 
     @staticmethod
+    @njit
     def _remap_sort_order(sort_order_array: Iterable, 
                           mask: Iterable) -> np.ndarray:
-        new_position_of_old = (np.cumsum(mask) - 1).astype(np.int32)        # parent pos -> child pos
-        child_mask = mask[sort_order_array]              # which entries survive, per column
-        remapped = new_position_of_old[sort_order_array]  # remapped positions, per column
-        n_features = sort_order_array.shape[1]
+        # No 2-D intermediates (child_mask, remapped) and no .copy() at all: walk each
+        # column directly and write survivors straight into the output. Cheaper than
+        # both the original vectorized form (which relied on NumPy's stride-based
+        # boolean indexing - unsupported by Numba for >1-D masks) and the flatten+copy
+        # workaround (which paid for two full N x n_features temporaries to fake it).
+        N, n_features = sort_order_array.shape
         m = int(mask.sum())
-        return remapped.T[child_mask.T].reshape(n_features, m).T
-
+        new_position_of_old = (np.cumsum(mask) - 1).astype(np.int32)  # parent pos -> child pos
+        out = np.empty((m, n_features), dtype=sort_order_array.dtype)
+        for col in range(n_features):
+            write_row = 0
+            for row in range(N):
+                old_idx = sort_order_array[row, col]
+                if mask[old_idx]:
+                    out[write_row, col] = new_position_of_old[old_idx]
+                    write_row += 1
+        return out
 
     def predict(self, X: Iterable) -> np.ndarray:
         #> Pre-allocate output array corresponding to original row order

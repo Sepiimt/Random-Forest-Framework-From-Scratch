@@ -13,8 +13,8 @@ def model_evaluator(predicted_y: list | np.ndarray,
                     save_path: str = r"../results/benchmarks/"):
     # --- Documentation ---
     """
-    ## Usage
-    Use this function to evalate RF model and create a "metrics.txt" to save the evaluation info.
+    ## Function: Model Evaluator
+    Use this function to evalate RF model and create a `metrics.txt` to save the evaluation info.
     
     :param predicted_y: RF model predicted y. 
     :param y_test: y_test array.
@@ -22,6 +22,9 @@ def model_evaluator(predicted_y: list | np.ndarray,
     :param save: Flag for saving the results as ".txt" file.
     :param text_file_name: Name for saved ".txt" file.
     :param save_path: Save path for ".txt" file.
+
+    ## Author 
+    - "Sepanta Metanat"
     """
     # --- Ensure 1D Array Shapes to Prevent Broadcasting Bugs ---
     predicted_y = np.asarray(predicted_y).ravel()

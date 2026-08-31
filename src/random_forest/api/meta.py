@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class Meta:
     # --- Optional Parameters ---
     author: str = "Sepanta Metanat"
-    version: str = "1.0.0"
+    version: str = "1.3.0"
     github: str = "https://github.com/Sepiimt"
     # --- Technical Info Block ---
     technical_doc: str = cleandoc(f"""

@@ -1,11 +1,11 @@
 import numpy as np
 from typeguard import typechecked
-from ..api.memory import limit_memory
-from ..api.typing import Iterable
+from ..api.resource import memory_limit
+from ..api.typing import Iterable, IterableTuple
 
 #> ---------------------------------------------------------------------------------------
 
-@limit_memory(0.95)
+@memory_limit(0.9)
 @typechecked
 def train_test_split(X: Iterable, 
                      Y: Iterable,
@@ -14,24 +14,31 @@ def train_test_split(X: Iterable,
                      subsample: float | int | None = None,
                      shuffle: bool = True, 
                      random_state: int | None = None
-                     ) -> tuple[np.ndarray, np.ndarray,
-                                np.ndarray, np.ndarray]:
+                     ) -> IterableTuple:
     # --- Documentation ---
     """
-    ## Train/Test Split
-    Function implemented from scratch by "Sepanta Metanat"
-    - First edit: "2026/02/25"
-    - Last edit: "2026/08/10"
-
-    ## Usage
+    ## Function: Train/Test Split
     Use this function to split train/test data while customizing it.
-
+    
     :param X: X array
     :param Y: Y array
     :param test_size: Based on total size, the amount dedicated to testing
     :param subsample: Percentage or sample-count to create a subsample from the X and Y
     :param shuffle: Flag for shuffling the data
     :param random_state: Random state value (to be able to encode new data based on training)
+
+    ## Usage
+    ```python
+    # Select 30% of total data, then split 80/20 train/test
+    x_tr, x_te, y_tr, y_te = train_test_split(X, Y, subsample=0.30, test_size=0.2)
+
+    # Select exactly 4000 samples of total data, then split 80/20 train/test
+    x_tr, x_te, y_tr, y_te = train_test_split(X, Y, subsample=4000, test_size=0.2)
+    ```
+    ## Author 
+    - "Sepanta Metanat"
+        - First edit: "2026/02/25"
+        - Last edit: "2026/08/30"
     """
     X = np.asarray(X)
     Y = np.asarray(Y).ravel()
@@ -68,21 +75,5 @@ def train_test_split(X: Iterable,
     y_test  = Y[test_idx]
     # --- Return ---
     return x_train, x_test, y_train, y_test
-
-#> ---------------------------------------------------------------------------------------
-
-"""
---- Usage Examples ---
-
-```python
-
-# Select 30% of total data, then split 80/20 train/test
-x_tr, x_te, y_tr, y_te = train_test_split(X, Y, subsample=0.30, test_size=0.2)
-
-# Select exactly 4000 samples of total data, then split 80/20 train/test
-x_tr, x_te, y_tr, y_te = train_test_split(X, Y, subsample=4000, test_size=0.2)
-
-```
-"""
 
 #> ---------------------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import numpy as np
+from numba import njit
 from collections.abc import Generator
 from ..api.typing import SplitCriterion, Iterable, IterableTuple, CriteriaTuple
 
@@ -22,6 +23,31 @@ def rf_criteria_chooser(X: Iterable,
                         min_samples_leaf: int, 
                         rng: Generator
                         ) -> CriteriaTuple:
+    # --- Documentation ---
+    """
+    ## Function: RF Criteria Chooser
+    _(Internal function of RF Class)_
+    
+    Evaluates a random subset of features to determine the optimal split for a node by measuring impurity or divergence. 
+    Leverages precomputed masks and sorted arrays to bypass redundant sorting and memory allocation during candidate evaluation, ensuring efficiency under strict memory constraints.
+    
+    :param X: Array containing the input feature space.
+    :param Y: Array containing the target class labels.
+    :param random_row_indices: Indices representing the current node's active sample pool.
+    :param sort_order_array: Cached matrix of pre-sorted indices for numerical columns, isolating the sorting overhead to fit-time.
+    :param is_numerical_mask: Precomputed boolean mask strictly defining continuous variables versus globally pre-encoded categorical variables.
+    :param column_position_map: Maps a global feature index to its local position within the dense `sort_order_array`.
+    :param criterion: The active splitting metric, evaluating either impurity (e.g., Gini) or divergence (e.g., Hellinger distance).
+    :param class_weights: Tuple of class balancing weights, specifically applied when the class-weighted Gini scorer is active.
+    :param min_samples_leaf: Threshold strictly enforcing the minimum population required in both candidate child leaves to validate a split.
+    :param rng: Local generator instance utilized to randomly select `sqrt(n_columns)` candidate features without replacement.
+
+    :return: A 4-element tuple structured as `(column_number, criteria, is_numerical, score)` capturing the optimal split.\n
+        Returns `(None, None, None, None)` if no valid split satisfies `min_samples_leaf`.
+    
+    ## Author 
+    - "Sepanta Metanat"
+    """
     n_columns = X.shape[1]
     # --- Determening the Amount of Columns Choosing --- 
     feature_select_count = int(np.sqrt(n_columns)) #> Note: Selecting how many random features we should pick
@@ -129,15 +155,18 @@ def _split_score_processor(X: Iterable,
     #> `min_samples_leaf=1` reproduces that exact behaviour; larger values additionally
     #> forbid a split from carving off a sliver of fewer than `min_samples_leaf` samples,
     #> regardless of which criterion is scoring the candidates below.
-    valid_mask = (left_leaf_total_len >= min_samples_leaf) & (right_leaf_total_len >= min_samples_leaf)
+    valid_mask = _valid_mask_calculation(left_leaf_total_len, min_samples_leaf, right_leaf_total_len)
     if not np.any(valid_mask):
         return None, np.inf  # No valid split possible
     # --- Subset to valid splits ---
-    criteria_list = criteria_list[valid_mask]
-    left_leaf_total_len = left_leaf_total_len[valid_mask]
-    left_leaf_true_count = left_leaf_true_count[valid_mask]
-    right_leaf_total_len = right_leaf_total_len[valid_mask]
-    right_leaf_true_count = right_leaf_true_count[valid_mask]
+    (criteria_list, left_leaf_total_len,
+     left_leaf_true_count, right_leaf_total_len,
+     right_leaf_true_count) = _subset_valid_splitter(criteria_list,
+                                                     left_leaf_total_len,
+                                                     left_leaf_true_count,
+                                                     right_leaf_total_len,
+                                                     right_leaf_true_count,
+                                                     valid_mask)
     # --- Scoring Every Valid Candidate Under the Chosen Criterion ---
     score_function = _CRITERIA_SCORERS[criterion]
     scores = score_function(left_leaf_total_len, left_leaf_true_count,
@@ -150,8 +179,37 @@ def _split_score_processor(X: Iterable,
     # --- return ---
     return criteria_list[best_score_index], scores[best_score_index]  #> (Criteria, Score)
 
+@njit
+def _valid_mask_calculation(left_leaf_total_len, min_samples_leaf, right_leaf_total_len):
+    # --- Masking ---
+    valid_mask = (left_leaf_total_len >= min_samples_leaf) & (right_leaf_total_len >= min_samples_leaf)
+    # --- Return ---
+    return valid_mask
+
+@njit
+def _subset_valid_splitter(
+    criteria_list, 
+    left_leaf_total_len, 
+    left_leaf_true_count, 
+    right_leaf_total_len, 
+    right_leaf_true_count, 
+    valid_mask):
+    # --- Subset to valid splits ---
+    criteria_list = criteria_list[valid_mask]
+    left_leaf_total_len = left_leaf_total_len[valid_mask]
+    left_leaf_true_count = left_leaf_true_count[valid_mask]
+    right_leaf_total_len = right_leaf_total_len[valid_mask]
+    right_leaf_true_count = right_leaf_true_count[valid_mask]
+    # --- Return ---
+    return (criteria_list, 
+            left_leaf_total_len, 
+            left_leaf_true_count, 
+            right_leaf_total_len, 
+            right_leaf_true_count)
+    
 #> ---------------------------------------------------------------------------------------
 
+@njit
 def _numerical_split_counts(X: Iterable, 
                             Y: Iterable, 
                             random_row_indices: Iterable, 
@@ -178,18 +236,25 @@ def _numerical_split_counts(X: Iterable,
     mask = x_sorted[:-1] != x_sorted[1:]
     # --- Check for Valid Split ---
     if not np.any(mask):
-        return np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
+        # Matched to the populated branch's actual output dtypes below, not to
+        # x_sorted's own dtype - the /2.0 always upcasts criteria_list to float64.
+        return (np.empty(0, dtype=np.float64),
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.int32))
     # --- 4. Calculating the Amount of Values in each Section ---
     left_leaf_true_count = cum_true[:-1][mask]
     left_leaf_total_len = cum_total[:-1][mask]
     right_leaf_true_count = cum_true[-1] - left_leaf_true_count
-    right_leaf_total_len = node_total_len - left_leaf_total_len
+    right_leaf_total_len = (node_total_len - left_leaf_total_len).astype(np.int32)
     # --- 5. Creating Criteria List ---
     # Using the cached variable again
     criteria_list = (x_sorted[:-1][mask] + x_sorted[1:][mask]) / 2.0
     # --- return ---
     return criteria_list, left_leaf_total_len, left_leaf_true_count, right_leaf_total_len, right_leaf_true_count
 
+@njit
 def _none_numerical_split_counts(X: Iterable, 
                                  Y: Iterable, 
                                  random_row_indices: Iterable, 
@@ -214,6 +279,7 @@ def _none_numerical_split_counts(X: Iterable,
 
 #> ---------------------------------------------------------------------------------------
 
+@njit
 def _none_numerical_crosstab(X: Iterable, 
                              Y: Iterable, 
                              random_row_indices: Iterable, 
@@ -240,6 +306,7 @@ def _none_numerical_crosstab(X: Iterable,
 #> of candidate splits (one entry per threshold/category). `class_weights` is accepted by
 #> all three for a uniform call site even though only `_score_class_weighted_gini` uses it.
 
+@njit
 def _score_gini(left_total, 
                 left_true, 
                 right_total, 
@@ -259,6 +326,7 @@ def _score_gini(left_total,
     right_weight = right_total / node_total
     return (left_weight * left_gini) + (right_weight * right_gini)  #> lower is better
 
+@njit
 def _score_class_weighted_gini(left_total, 
                                left_true, 
                                right_total, 
@@ -289,6 +357,7 @@ def _score_class_weighted_gini(left_total,
     right_weight = right_total_w / node_total_w
     return (left_weight * left_gini) + (right_weight * right_gini)  #> lower is better
 
+@njit
 def _score_hellinger(left_total, 
                      left_true, 
                      right_total, 

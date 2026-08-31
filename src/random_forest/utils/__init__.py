@@ -1,7 +1,7 @@
 from .encoder import Encoder
 from .train_test_split import train_test_split
 from .timer import timer_function, time_capture_function
-from .profiler import MemoryTracker, profile_memory
+from .tracker import MemoryTracker, track_memory
 
 #> ---------------------------------------------------------------------------------------
 
@@ -11,6 +11,6 @@ __all__ = ["Encoder",
 
            "timer_function", "time_capture_function", 
            
-           "MemoryTracker", "profile_memory"]
+           "MemoryTracker", "track_memory"]
 
 #> ---------------------------------------------------------------------------------------

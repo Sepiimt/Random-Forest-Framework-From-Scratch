@@ -1,5 +1,6 @@
 import gc
 import numpy as np
+from numba import njit
 import os
 import warnings
 from typing import Optional, Self
@@ -12,7 +13,7 @@ from ..utils import timer_function, time_capture_function
 from ..tree import Node
 from ..api.meta import Meta as meta
 from ..api.decorators import classproperty, requires_fit
-from ..api.memory import limit_memory
+from ..api.resource import memory_limit, cpu_limit
 
 from ..api.warnings import (CategoricalInferenceWarning, 
                             ResourceLimitWarning, AutoBalanceWarning)
@@ -25,10 +26,10 @@ from ..api.typing import (Instructions, SplitCriterion, Iterable, IterableTuple,
 class RandomForest:
     # --- Documentation ---
     """
-    ## Random Forest Class
+    ## Class: Random Forest
     RF framework implemented from scratch by "Sepanta Metanat"
     - First edit: "2026/02/25"
-    - Last edit: "2026/08/10"
+    - Last edit: "2026/08/30"
     """
     # --- Slots ---
     __slots__ = (
@@ -65,7 +66,8 @@ class RandomForest:
         return meta()
 
 
-    @limit_memory(0.95)
+    @cpu_limit(0.9)
+    @memory_limit(0.9)
     @typechecked
     def fit(self, 
             X_path: str, 
@@ -159,16 +161,20 @@ class RandomForest:
         self.is_fitted = True
 
     @staticmethod
-    def _input_memory_mapper(X_path: str, Y_path: str | None = None) -> DependentArrayTuple:
+    def _input_memory_mapper(
+        X_path: str, 
+        Y_path: str | None = None
+        ) -> DependentArrayTuple:
         # --- Memory Mapping ---
         X = np.load(X_path, mmap_mode='r')
         Y = np.load(Y_path, mmap_mode='r') if Y_path is not None else None
         return X, Y
 
     @staticmethod
-    def _build_numerical_mask(X: Iterable, 
-                              categorical_columns: OptionalIterable
-                              ) -> Iterable:
+    def _build_numerical_mask(
+        X: Iterable,
+        categorical_columns: OptionalIterable
+        ) -> Iterable:
         n_columns = X.shape[1]
         # --- If cc_columns in Parsed ---
         if categorical_columns is not None:
@@ -188,6 +194,7 @@ class RandomForest:
             return np.ones(n_columns, dtype=bool)
 
     @staticmethod
+    @njit
     def _build_column_position_map(is_numerical_mask) -> IterableTuple:
         numerical_column_indices = np.where(is_numerical_mask)[0]
         column_position_map = np.full(is_numerical_mask.shape[0], -1, dtype=np.int32)
@@ -370,8 +377,9 @@ class RandomForest:
         return combined_row_indices
 
 
-    @limit_memory(0.95)
     @requires_fit #> Model Train Check
+    @cpu_limit(0.9)
+    @memory_limit(0.9)
     @typechecked
     def predict(self, 
                 X_path: str,
@@ -425,8 +433,9 @@ class RandomForest:
         return (predicted_y >= threshold).astype(int)
 
 
-    @limit_memory(0.95)
     @requires_fit #> Model Train Check
+    @cpu_limit(0.9)
+    @memory_limit(0.9)
     @typechecked
     def save_model(self, 
                    directory: str = r"../artifacts/forest/", 
@@ -528,7 +537,8 @@ class RandomForest:
 
     
     @classmethod
-    @limit_memory(0.95)
+    @cpu_limit(0.9)
+    @memory_limit(0.9)
     @typechecked
     def load_model(cls, 
                    directory: str = r"../artifacts/forest/", 
