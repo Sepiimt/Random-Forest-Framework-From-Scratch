@@ -4,6 +4,7 @@
 
 # --- Core package (src/random_forest) ---
 numpy
+numba           # Machine-Code Python compiler
 joblib          # Parallel(backend="loky") tree-level parallelism
 typeguard       # @typechecked runtime signature enforcement
 matplotlib      # random_forest.plot.plotter
