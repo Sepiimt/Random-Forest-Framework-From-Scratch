@@ -14,27 +14,26 @@ from random_forest.forest import RandomForest
 
 #> ---------------------------------------------------------------------------------------
 
-def _load_toml_config(config_path: Path) -> dict:
+def _load_toml_config(config_path: Path):
     """Read binary TOML file using Python 3.11+ standard library."""
     with open(config_path, "rb") as f:
         raw_config = tomllib.load(f)
-        return (raw_config["path"],
-                raw_config["name"], 
-                raw_config["random_forest"], 
+        return (raw_config["model"]["model"],
+                raw_config["path"],
+                raw_config["ram_profiler_names"], 
+                raw_config["model_params"], 
                 raw_config["iterable_config"])
 
 #> ---------------------------------------------------------------------------------------
 
-def _validate_iterable_lengths(iterable_cfg: dict) -> list[dict]:
-    """
-    Strips '_ls' from parameter keys and transposes list values into 
-    individual column configuration dictionaries.
-    """
-    fi = len(iterable_cfg["n_trees"])
-    si = len(iterable_cfg["min_leaf_purity"])
-    ti = len(iterable_cfg["min_samples_split"])
-    foi = len(iterable_cfg["min_samples_leaf"])
-    if fi != si or fi != ti or fi != foi:
+def _validate_rf_iterable_lengths(config_iterable_params: dict) -> list[dict]:
+    fi = len(config_iterable_params["n_trees"])
+    si = len(config_iterable_params["trees_max_depth"])
+    ti = len(config_iterable_params["min_leaf_purity"])
+    foi = len(config_iterable_params["min_samples_split"])
+    fivi = len(config_iterable_params["min_samples_leaf"])
+    criteria = len(np.unique([fi, si, ti, foi, fivi]))
+    if criteria != 1:
         raise ValueError("Config's iterable lenghts does not match!")
     # --- Return ---
     return fi
@@ -57,7 +56,13 @@ def _parse_cli_args() -> argparse.Namespace:
 
 #> ---------------------------------------------------------------------------------------
 
-def _prediction_loop(x_test, base_rf_params, iterable_cfg, config_paths, config_names, n_runs):
+def _rf_prediction(x_test, 
+                   selected_model, 
+                   config_paths, 
+                   config_names, 
+                   config_static_params, 
+                   config_iterable_params, 
+                   n_runs):
     for i in range(n_runs):
         # 1. Fixed leading slash in path join
         model_dir = os.path.join(config_paths["model"], f"config_{i+1}")
@@ -69,7 +74,7 @@ def _prediction_loop(x_test, base_rf_params, iterable_cfg, config_paths, config_
         # --- Predicting ---
         predicted_y = RandomForestModel.predict(
             x_test,
-            n_jobs=base_rf_params["n_jobs"],
+            n_jobs=config_static_params["n_jobs"],
             timer=False
         )
         # --- Saving The Predictions ---
@@ -92,13 +97,30 @@ def main():
     if not args.config.exists():
         raise FileNotFoundError(f"Configuration file not found: {args.config}")
     # --- Parsing Argument ---
-    config_paths, config_names, base_rf_params, iterable_cfg = _load_toml_config(args.config)
+    (selected_model, config_paths,
+     config_names, config_static_params,
+     config_iterable_params) = _load_toml_config(args.config)
     # --- Getting Values ---
-    n_runs = _validate_iterable_lengths(iterable_cfg)
+    n_runs = _MODEL_ITER_VALIDATOR[selected_model](config_iterable_params)
     x_test = os.path.join(config_paths["data"],"x_test.npy")
     # --- Predicting ---
-    _prediction_loop(x_test, base_rf_params, iterable_cfg, config_paths, config_names, n_runs)
+    if selected_model == "random_forest":
+        _rf_prediction(x_test,
+                       selected_model,
+                       config_paths,
+                       config_names,
+                       config_static_params,
+                       config_iterable_params,
+                       n_runs)
+    else:
+        raise ValueError("Selected model is not available!")
     
+#> ---------------------------------------------------------------------------------------
+
+_MODEL_ITER_VALIDATOR = {
+    "random_forest" : _validate_rf_iterable_lengths
+}
+
 #> ---------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -108,5 +130,7 @@ if __name__ == "__main__":
         print("\n\n[!] Process interrupted by user (^C). Force quitting...")
         gc.collect()
         raise SystemExit(1)
-
+    
 #> ---------------------------------------------------------------------------------------
+
+
