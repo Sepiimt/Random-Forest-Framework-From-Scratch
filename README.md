@@ -32,6 +32,22 @@ This repository contains a ground-up implementation of a Random Forest classifie
 
 ```
 .
+├── artifacts/                     # Partially tracked — see note below the tree
+│   ├── encoder/
+│   │   └── saml_d/                 # Only SAML-D has categorical columns to encode (§5.1)
+│   │       ├── decode_data.npy
+│   │       └── model_data.npy
+│   └── predictions/
+│       └── rf/                     # Per-config predicted_y.npy, one per dataset/config
+│           ├── higgs/
+│           │   └── config_*/
+│           │       └── predicted_y.npy
+│           ├── saml_d/
+│           │   └── config_*/
+│           │       └── predicted_y.npy
+│           └── susy/
+│               └── config_*/
+│                   └── predicted_y.npy
 ├── configs/
 │   └── rf/                       # TOML configs driving batch train/predict sweeps
 │       ├── higgs.toml
@@ -64,7 +80,7 @@ This repository contains a ground-up implementation of a Random Forest classifie
     └── gradient_boosting/         # Reserved namespace — no code yet
 ```
 
-`data/` and `artifacts/` (raw datasets, processed parquet files, trained model weights) are intentionally excluded from version control on account of size; the paths referenced by `configs/rf/*.toml` assume they exist locally in that shape.
+`data/` remains excluded from version control entirely, on account of size. `artifacts/` is now *partially* tracked: `artifacts/encoder/` (the `Encoder`'s small `.npy` codec files) and `artifacts/predictions/rf/` (per-config `predicted_y.npy` arrays) are both checked in, since neither grows large. `artifacts/models/rf/` — the actual trained forests, one `random_forest_model.npz` per config — stays excluded; those are the large ones, and the paths referenced by `configs/rf/*.toml` assume they exist locally in that shape regardless.
 
 `ada_boost/` and `gradient_boosting/` currently ship nothing — not a single file, not even their own `__init__.py`. `configs/`, `results/`, and the artifact directories already nest everything RF-specific one level down under `rf/` in anticipation of those two eventually landing beside it.
 
