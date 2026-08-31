@@ -1,0 +1,14 @@
+--- [Memory Profile: SUSY Training Memory Benchmark] ---
+baseline_mb: 79.33
+peak_mb: 7051.48
+avg_mb: 5359.06
+peak_gb: 6.886
+net_peak_mb: 6972.16
+net_avg_mb: 5279.74
+peak_uss_mb: 5625.37
+avg_uss_mb: 3922.18
+peak_uss_gb: 5.494
+net_peak_uss_mb: 5572.57
+net_avg_uss_mb: 3869.37
+samples_taken: 7096
+----------------------------------

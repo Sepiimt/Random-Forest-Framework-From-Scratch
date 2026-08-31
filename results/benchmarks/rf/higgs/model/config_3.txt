@@ -1,0 +1,18 @@
+--- Model Info ---
+> Total Tree Objects in the Forest: 140
+> Depth of Each Tree Object: 500
+> Minimum Purity of Each Leaf-Node in Tree Objects: 0.98
+> Model Has Been Trained on 1320000 Samples.
+> Total Time Taken for Training the Model: 1181.497424299996
+
+--- Model Metrics ---
+> Cross_Entropy: 0.5231275912768281
+> Confusion Matrix: 
+[[107295  47884]
+ [ 38458 136363]]
+
+> Accuracy: 0.7383575757575758
+> Precision: 0.7401097439849766
+> Recall: 0.7800149867578838
+> F1_Score: 0.7595385832210055
+> Brier_Score: 0.17494824893669947
